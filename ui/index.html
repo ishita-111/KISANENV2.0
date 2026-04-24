@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KisanEnv 2.0 — Multi-Agent Agricultural AI</title>
+  <meta name="description" content="Multi-agent agricultural AI simulation for Indian smallholder farming. 3D visualization dashboard for KisanEnv 2.0 environment.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+
+
+  <!-- ═══ REWARD FLASH ═════════════════════════════════════════════════════ -->
+  <div id="reward-flash"></div>
+
+  <!-- ═══ 3D CANVAS ════════════════════════════════════════════════════════ -->
+  <canvas id="farm-canvas"></canvas>
+
+  <!-- ═══ TIMELINE BAR ═════════════════════════════════════════════════════ -->
+  <div id="timeline-bar">
+    <div id="timeline-progress"></div>
+  </div>
+
+  <!-- ═══ HUD PANEL (right side) ═══════════════════════════════════════════ -->
+  <div id="hud">
+
+    <!-- Top Bar -->
+    <div id="top-bar">
+      <div id="title-block">
+        <h1>KISANENV 2.0</h1>
+        <span class="subtitle">Multi-Agent Agricultural AI</span>
+      </div>
+      <div id="top-right-info">
+        <div id="day-counter">Day 1 / 90</div>
+        <div id="phase-label">Setup &amp; Insurance</div>
+      </div>
+    </div>
+
+    <!-- Episode + Status row -->
+    <div id="status-row">
+      <div id="episode-counter">Episode 1</div>
+      <div id="sim-status" class="sim-badge badge-ready">READY</div>
+      <button id="start-btn" class="ctrl-btn start-btn">Start</button>
+      <button id="stop-btn" class="ctrl-btn stop-btn hidden">Stop</button>
+    </div>
+
+    <!-- Farm Status Panel -->
+    <div class="panel" id="farm-panel">
+      <h3 class="panel-title">Farm Status</h3>
+      <div class="stat-row"><span>Crop Health</span><div class="bar-track"><div class="bar-fill" id="health-bar"></div></div></div>
+      <div class="stat-row"><span>Soil Moisture</span><div class="bar-track"><div class="bar-fill" id="moisture-bar"></div></div></div>
+      <div class="stat-row"><span>Soil Nitrogen</span><div class="bar-track"><div class="bar-fill" id="nitrogen-bar"></div></div></div>
+      <div class="stat-row"><span>Soil Health</span><div class="bar-track"><div class="bar-fill" id="soil-bar"></div></div></div>
+      <div class="stat-row"><span>Pest Pressure</span><div class="bar-track"><div class="bar-fill bar-danger" id="pest-bar"></div></div></div>
+      <div class="stat-row"><span>Fungal Risk</span><div class="bar-track"><div class="bar-fill bar-danger" id="fungal-bar"></div></div></div>
+      <div class="panel-divider"></div>
+      <div class="budget-row">
+        <span class="budget-label">Budget</span>
+        <span id="budget-display" class="budget-value">Rs.15,000</span>
+      </div>
+      <div id="insurance-status" class="insurance-badge badge-alert">Uninsured</div>
+    </div>
+
+    <!-- Agent Decision Panel -->
+    <div class="panel" id="agent-panel">
+      <h3 class="panel-title">Agent Decision</h3>
+      <div id="action-display" class="action-box">&mdash;</div>
+      <div id="reasoning-display" class="reasoning-box"></div>
+      <div id="step-reward" class="reward-text">+0.000</div>
+    </div>
+
+    <!-- Oversight Panel -->
+    <div class="panel" id="oversight-panel">
+      <h3 class="panel-title">District Farm Advisor</h3>
+      <div class="oversight-row">
+        <span>Decision Quality:</span>
+        <span id="oversight-score" class="score-val score-neutral">&mdash;%</span>
+        <span id="oversight-severity" class="severity-badge sev-neutral">NEUTRAL</span>
+      </div>
+      <div id="oversight-explanation" class="oversight-text"></div>
+    </div>
+
+    <!-- Reward Chart -->
+    <div class="panel" id="chart-panel">
+      <canvas id="reward-chart"></canvas>
+    </div>
+
+  </div>
+
+  <!-- ═══ REFLECTION PANEL (slides up from bottom) ═════════════════════════ -->
+  <div id="reflection-panel">
+    <h3>Learning from Previous Episode</h3>
+    <pre id="reflection-text"></pre>
+  </div>
+
+  <!-- ═══ SCRIPTS ══════════════════════════════════════════════════════════ -->
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.155.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.155.0/examples/jsm/"
+    }
+  }
+  </script>
+  <script type="module" src="simulation.js"></script>
+  <script type="module" src="dashboard.js"></script>
+</body>
+</html>

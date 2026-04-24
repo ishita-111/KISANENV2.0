@@ -1,0 +1,82 @@
+# openenv.yaml
+# KisanEnv 2.0 — OpenEnv Framework Configuration
+# This file is read by the OpenEnv CLI and training infrastructure.
+
+name: kisanenv
+version: "2.0.0"
+description: >
+  Multi-agent Indian agricultural simulation environment for LLM reinforcement
+  learning. Trains agents to make sequential farming decisions under uncertainty
+  across a 90-day cotton growing season.
+
+# Entry point
+environment:
+  module: env
+  class: KisanEnv
+  config: {}
+
+# Server configuration
+server:
+  module: run
+  host: 0.0.0.0
+  port: 8000
+  health_endpoint: /health
+
+# Observation and action space types
+spaces:
+  observation:
+    type: text
+    description: "Formatted LLM prompt describing farm state, market, and available actions"
+    max_length: 2048
+  action:
+    type: text
+    description: "LLM output in ACTION: / REASONING: format"
+    max_length: 512
+
+# Episode configuration
+episode:
+  max_steps: 90
+  early_termination: true
+  termination_conditions:
+    - "budget <= -5000"
+    - "crop_health <= 0.0"
+
+# Themes (for hackathon categorization)
+themes:
+  primary: multi-agent
+  secondary:
+    - long-horizon-planning
+    - world-modeling
+    - self-improvement
+  wild_card: theory-of-mind
+
+# Bonus prize targets
+bonus_targets:
+  fleet_ai:
+    feature: oversight_auditor
+    description: "DistrictFarmAdvisor evaluates every major decision with score + explanation"
+  halluminate:
+    feature: multi_actor_ecosystem
+    description: "4 agents with distinct incentives and information sets"
+  mercor:
+    feature: reasoning_quality_reward
+    description: "Reward scales with length and causal quality of LLM reasoning"
+
+# Training defaults
+training:
+  framework: trl
+  algorithm: grpo
+  model: unsloth/Qwen2.5-3B-Instruct
+  max_episodes: 300
+  checkpoint_every: 50
+
+# Metrics to track
+metrics:
+  - episode_reward
+  - crop_yield
+  - net_profit
+  - soil_health_delta
+  - reasoning_quality_avg
+  - oversight_score_avg
+  - curriculum_difficulty
+  - insurance_enrollment_rate

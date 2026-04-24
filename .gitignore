@@ -1,0 +1,19 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Data and logs
+*.json
+*.log
+
+# Project specific ignores
+checkpoint/
+results/
+
+# Documentation (as per user request)
+*.md
+
+# OS generated files
+.DS_Store
+Thumbs.db
