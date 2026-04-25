@@ -13,7 +13,6 @@ from env import KisanEnv
 from inference import ActionParser
 from grader import ReasoningScorer
 
-# FIX: Create a fresh env per call, not a shared global
 def reward_function(completions, prompts=None, **kwargs) -> List[float]:
     rewards = []
     for content in completions:
@@ -37,7 +36,6 @@ def main():
     max_seq_length = 1024
     output_dir = "kisanenv-qwen-grpo"
 
-    # ── Load model ───────────────────────────────────────────────────────────
     print(f"Loading {model_name}...")
     model, tokenizer = FastLanguageModel.from_pretrained(
         model_name=model_name,
@@ -46,7 +44,7 @@ def main():
         dtype=None,
     )
 
-    # ── Attach LoRA ──────────────────────────────────────────────────────────
+    
     model = FastLanguageModel.get_peft_model(
         model,
         r=16,
@@ -55,11 +53,10 @@ def main():
         lora_alpha=16,
         lora_dropout=0,
         bias="none",
-        use_gradient_checkpointing="unsloth",   # FIX 1: saves ~3GB on T4
-        random_state=42,                         # FIX 2: reproducibility
+        use_gradient_checkpointing="unsloth",  
+        random_state=42,                    
     )
 
-    # ── Training config ──────────────────────────────────────────────────────
     training_args = GRPOConfig(
         output_dir=output_dir,
         learning_rate=5e-5,
@@ -78,11 +75,11 @@ def main():
         max_completion_length=256,
         max_steps=250,
         save_steps=50,
-        dataloader_num_workers=0,                # FIX 4: required for Colab
-        remove_unused_columns=False,             # FIX 5: keeps prompt column
+        dataloader_num_workers=0,                
+        remove_unused_columns=False,           
     )
 
-    # ── Dataset ──────────────────────────────────────────────────────────────
+    
     from datasets import Dataset
 
     if os.path.exists("training/prompts.json"):
@@ -112,21 +109,20 @@ def main():
     dataset = Dataset.from_list(raw)
     print(f"Dataset ready: {len(dataset)} prompts")
 
-    # ── Train ────────────────────────────────────────────────────────────────
+    
     trainer = GRPOTrainer(
         model=model,
         reward_funcs=[reward_function],
         args=training_args,
         train_dataset=dataset,
-        tokenizer=tokenizer,                     # FIX 6: was missing, causes crash
+        tokenizer=tokenizer,                    
     )
 
-    torch.cuda.empty_cache()                     # FIX 7: clear before training
+    torch.cuda.empty_cache()                    
     print("Starting GRPO training...")
     stats = trainer.train()
     print(f"Training complete. Final loss: {stats.training_loss:.4f}")
 
-    # ── Save ─────────────────────────────────────────────────────────────────
     model.save_pretrained(output_dir)
     tokenizer.save_pretrained(output_dir)
     print(f"Saved LoRA adapter to {output_dir}/")
