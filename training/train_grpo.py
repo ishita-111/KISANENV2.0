@@ -14,27 +14,20 @@ from env import KisanEnv
 from inference import ActionParser
 from grader import ReasoningScorer
 
-_grpo_env = None
-
-def _get_grpo_env():
-    global _grpo_env
-    if _grpo_env is None:
-        _grpo_env = KisanEnv()
-        _grpo_env.reset()
-    return _grpo_env
-
-def reward_function(completions, **kwargs) -> List[float]:
-    env = _get_grpo_env()
+# FIX: Create a fresh env per call, not a shared global
+def reward_function(completions, prompts=None, **kwargs) -> List[float]:
     rewards = []
     for content in completions:
+        env = KisanEnv()
+        env.reset()
         parsed = ActionParser.parse(content)
         reasoning = parsed.get("reasoning", "")
         try:
             obs, reward, done, info = env.step(content)
             if done:
-                env.reset()
-        except Exception:
-            env.reset()
+                ep_reward = info.get("episode_reward", reward)
+                reward = ep_reward
+        except Exception as e:
             reward = -0.1
         reasoning_bonus = ReasoningScorer.score(reasoning) * 0.04
         rewards.append(float(reward) + reasoning_bonus)
@@ -80,11 +73,26 @@ def main():
         save_steps = 50,
     )
 
+    from datasets import Dataset
+
     if os.path.exists("training/prompts.json"):
         with open("training/prompts.json", "r") as f:
-            dataset = json.load(f)
+            raw = json.load(f)
     else:
-        dataset = [{"prompt": "The farm is dry (30% moisture). What should I do?"}]
+        # Fallback: generate prompts from env
+        raw = []
+        gen_env = KisanEnv()
+        for _ in range(60):
+            obs = gen_env.reset()
+            raw.append({"prompt": obs["prompt"]})
+            for _ in range(4):
+                _, _, done, _ = gen_env.step("ACTION: do_nothing\nREASONING: monitoring.")
+                if not done:
+                    raw.append({"prompt": gen_env._build_observation(None, 0.0)["prompt"]})
+                else:
+                    break
+
+    dataset = Dataset.from_list(raw)
 
     trainer = GRPOTrainer(
         model = model,
