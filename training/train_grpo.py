@@ -14,7 +14,6 @@ from env import KisanEnv
 from inference import ActionParser
 from grader import ReasoningScorer
 
-# FIX: Create a fresh env per call, not a shared global
 def reward_function(completions, prompts=None, **kwargs) -> List[float]:
     rewards = []
     for content in completions:
