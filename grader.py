@@ -1,7 +1,7 @@
 
 import re
 import json
-from typing import Dict, List, Optional, Any
+from typing import Dict, List, Optional, Any, Tuple
 import numpy as np
 
 REWARD_WEIGHTS = {
@@ -90,7 +90,7 @@ class RewardEngine:
         episode_log: List[Dict],
         market_agent,
         initial_soil_health: float,
-    ) -> float:
+    ) -> Tuple[float, Dict]:
         scores = {}
 
         net_profit = farm_state.revenue_earned - (
@@ -139,7 +139,15 @@ class RewardEngine:
         scores["insurance_usage"] = insurance_score
 
         total = sum(REWARD_WEIGHTS[key] * scores[key] for key in REWARD_WEIGHTS)
-        return float(np.clip(total, 0.0, 1.0))
+        breakdown = {
+            key: {
+                "raw_score": round(scores[key], 3),
+                "weight": REWARD_WEIGHTS[key],
+                "contribution": round(REWARD_WEIGHTS[key] * scores[key], 3)
+            }
+            for key in REWARD_WEIGHTS
+        }
+        return float(np.clip(total, 0.0, 1.0)), breakdown
 
     def _compute_waste_potential(self, episode_log: List[Dict]) -> int:
         return len(episode_log) * 200
@@ -152,7 +160,7 @@ class RewardEngine:
 
             if action == "irrigate_high" and fs.get("soil_moisture", 0) > 0.75:
                 waste += 250
-            if action == "spray_pesticide" and fs.get("pest_pressure_observed", 1) < 0.25:
+            if action == "spray_pesticide" and fs.get("pest_pressure", fs.get("pest_pressure_observed", 1)) < 0.25:
                 waste += 400
             if action == "apply_fertilizer_high" and fs.get("soil_nitrogen", 0) > 0.8:
                 waste += 580

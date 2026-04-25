@@ -69,10 +69,14 @@ class LLMClient:
         state = {"day": 1, "soil_moisture": 0.5, "budget": 15000}
         d_match = re.search(r"Day\s+(\d+)", prompt)
         if d_match: state["day"] = int(d_match.group(1))
-        m_match = re.search(r"Moisture\s+(\d+)%", prompt)
+        m_match = re.search(r"Moisture[:\s]+(\d+)%", prompt)
         if m_match: state["soil_moisture"] = int(m_match.group(1)) / 100
-        b_match = re.search(r"Rs\.\s*([\d,]+)", prompt)
+        b_match = re.search(r"Rs\.[\s]*([\d,]+)", prompt)
         if b_match: state["budget"] = int(b_match.group(1).replace(",", ""))
+        p_match = re.search(r"Pests[:\s]+(\d+)%", prompt)
+        if p_match: state["pest_pressure"] = int(p_match.group(1)) / 100
+        f_match = re.search(r"Fungal[:\s]+(\d+)%", prompt)
+        if f_match: state["fungal_risk"] = int(f_match.group(1)) / 100
         state["insurance_enrolled"] = "ENROLLED" in prompt and "NOT ENROLLED" not in prompt
         return state
 

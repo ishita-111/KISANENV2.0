@@ -47,7 +47,7 @@ def discretize_state(farm_state: Dict) -> Tuple[int, ...]:
     moisture = farm_state.get("soil_moisture", 0.5)
     moisture_level = 0 if moisture < 0.30 else (2 if moisture > 0.70 else 1)
 
-    pest = farm_state.get("pest_pressure_observed", 0.1)
+    pest = farm_state.get("pest_pressure", farm_state.get("pest_pressure_observed", 0.1))
     pest_level = 0 if pest < 0.25 else (2 if pest > 0.55 else 1)
 
     fungal = farm_state.get("fungal_risk", 0.1)
@@ -70,7 +70,7 @@ def discretize_state(farm_state: Dict) -> Tuple[int, ...]:
 def generate_reasoning(action: str, farm_state: Dict, q_values: np.ndarray) -> str:
     day = farm_state.get("day", 1)
     moisture = farm_state.get("soil_moisture", 0.5)
-    pest = farm_state.get("pest_pressure_observed", 0.1)
+    pest = farm_state.get("pest_pressure", farm_state.get("pest_pressure_observed", 0.1))
     budget = farm_state.get("budget", 15000)
     
     templates = {
@@ -149,13 +149,13 @@ class FarmerAgent:
         self.action_counts[name] += 1
         return name, generate_reasoning(name, farm_state, self.q_table[state])
 
-    def update(self, reward: float, next_state_dict: Dict, done: bool):
+    def update(self, reward: float, next_farm_state: Dict, done: bool):
         if self._prev_state is None: return
         q_vals = self.q_table[self._prev_state]
         
         if done: target = reward
         else:
-            ns = discretize_state(next_state_dict)
+            ns = discretize_state(next_farm_state)
             if ns not in self.q_table: self.q_table[ns] = np.zeros(NUM_ACTIONS)
             target = reward + self.gamma * np.max(self.q_table[ns])
             

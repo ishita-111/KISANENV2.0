@@ -94,7 +94,7 @@ function updateFarmPanel(fs, day) {
   setBar('moisture-bar', fs.soil_moisture);
   setBar('nitrogen-bar', fs.soil_nitrogen);
   setBar('soil-bar', fs.soil_health);
-  setBar('pest-bar', fs.pest_pressure_observed, true);
+  setBar('pest-bar', fs.pest_pressure ?? fs.pest_pressure_observed ?? 0, true);
   setBar('fungal-bar', fs.fungal_risk, true);
 
   setText('budget-display', `Rs.${fs.budget.toLocaleString('en-IN')}`);

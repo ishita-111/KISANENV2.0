@@ -2,13 +2,18 @@
 class DistrictFarmAdvisor:
     def __init__(self):
         self.personality = "conservative"
+        self.preference_state = "chemical"
         self.advice_history = []
 
     def reset(self, episode_count):
         self.advice_history = []
+        self.preference_state = "chemical"
         self.personality = "conservative" if episode_count % 2 == 0 else "progressive"
 
     def step(self, day, farm_state):
+        if day >= 36:
+            self.preference_state = "ipm"
+
         advice = "No urgent guidance today."
         
         if farm_state.soil_moisture < 0.3:

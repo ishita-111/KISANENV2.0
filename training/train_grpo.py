@@ -12,27 +12,32 @@ except ImportError:
 
 from env import KisanEnv
 from inference import ActionParser
+from grader import ReasoningScorer
+
+_grpo_env = None
+
+def _get_grpo_env():
+    global _grpo_env
+    if _grpo_env is None:
+        _grpo_env = KisanEnv()
+        _grpo_env.reset()
+    return _grpo_env
 
 def reward_function(completions, **kwargs) -> List[float]:
-    env = KisanEnv()
+    env = _get_grpo_env()
     rewards = []
-    
     for content in completions:
         parsed = ActionParser.parse(content)
-        action = parsed.get("action", "do_nothing")
         reasoning = parsed.get("reasoning", "")
-        
-        obs, reward, done, info = env.step(content)
-        
-        if len(reasoning.split()) > 15:
-            reward += 0.02
-            
-        if any(w in reasoning.lower() for w in ["moisture", "pest", "budget", "price"]):
-            reward += 0.01
-            
-        rewards.append(float(reward))
-        if done: env.reset()
-        
+        try:
+            obs, reward, done, info = env.step(content)
+            if done:
+                env.reset()
+        except Exception:
+            env.reset()
+            reward = -0.1
+        reasoning_bonus = ReasoningScorer.score(reasoning) * 0.04
+        rewards.append(float(reward) + reasoning_bonus)
     return rewards
 
 def main():

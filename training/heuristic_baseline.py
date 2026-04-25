@@ -16,7 +16,7 @@ class HeuristicAgent:
         """Given farm state dict, return formatted action string."""
         day = farm_state.get("day", 1)
         moisture = farm_state.get("soil_moisture", 0.5)
-        pest = farm_state.get("pest_pressure_observed", 0.1)
+        pest = farm_state.get("pest_pressure", farm_state.get("pest_pressure_observed", 0.1))
         fungal = farm_state.get("fungal_risk", 0.1)
         budget = farm_state.get("budget", 15000)
         insurance = farm_state.get("insurance_enrolled", False)
